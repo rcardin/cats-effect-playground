@@ -60,14 +60,24 @@ object CopyFileMain extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
     for {
-      _ <-
-        if (args.length < 2)
-          IO.raiseError(new IllegalArgumentException("Need origin and destination files"))
-        else
-          IO.unit
+      _ <- verifyNumberOfInputs(args)
+      _ <- verifySourceAndDestination(args)
       orig = new File(args.head)
       dest = new File(args(1))
       count <- copy(orig, dest)
       _ <- IO(println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}"))
     } yield ExitCode.Success
+
+  private def verifySourceAndDestination(args: List[String]) = {
+    if (args.head == args(1))
+      IO.raiseError(new IllegalArgumentException("Source and destination file cannot be the same"))
+    else IO.unit
+  }
+
+  private def verifyNumberOfInputs(args: List[String]) = {
+    if (args.length < 2)
+      IO.raiseError(new IllegalArgumentException("Need origin and destination files"))
+    else
+      IO.unit
+  }
 }
